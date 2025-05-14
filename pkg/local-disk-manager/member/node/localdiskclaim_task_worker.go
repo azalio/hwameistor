@@ -89,7 +89,7 @@ func (m *nodeManager) processLocalDiskClaimBound(diskClaim *v1alpha1.LocalDiskCl
 		poolExtendedSet[poolName] = struct{}{}
 
 		exist := m.registryManager.DiskExist(localDisk.Spec.DevicePath)
-		// skip exist disk
+		logCtx.WithFields(log.Fields{"devicePath": localDisk.Spec.DevicePath, "exist": exist}).Info("Check if disk exists in pool (before ExtendPool)")
 		if exist {
 			logCtx.Infof("Disk %s already exist in pool, skip it", localDisk.Spec.DevicePath)
 			continue

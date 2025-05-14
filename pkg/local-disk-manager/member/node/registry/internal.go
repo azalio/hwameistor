@@ -141,6 +141,7 @@ func (r *localRegistry) GetVolumeByName(name string) *types.Volume {
 
 func (r *localRegistry) DiskExist(devPath string) bool {
 	_, ok := r.disks.Load(devPath)
+	log.WithFields(log.Fields{"devPath": devPath, "exists": ok}).Info("[LDM] DiskExist check")
 	return ok
 }
 
