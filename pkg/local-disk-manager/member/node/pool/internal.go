@@ -51,23 +51,31 @@ func (p *diskPool) GetPool(poolName string) (*Pool, error) {
 }
 
 func (p *diskPool) ExtendPool(poolName string, devLinks []string, serial string) (bool, error) {
+	log.WithFields(log.Fields{"poolName": poolName, "devLinks": devLinks, "serial": serial}).Info("[LDM] Start ExtendPool")
 	actualDeviceLink, err := findSuitableDevLink(devLinks, serial)
 	if err != nil {
+		log.WithError(err).Errorf("[LDM] Failed to find suitable devLink for pool %s", poolName)
 		return false, err
 	}
+	log.WithFields(log.Fields{"poolName": poolName, "actualDeviceLink": actualDeviceLink}).Info("[LDM] Chosen actualDeviceLink for symlink")
 
 	devName := strings.Split(actualDeviceLink, "/")[len(strings.Split(actualDeviceLink, "/"))-1]
 	poolDevicePath := types.ComposePoolDevicePath(poolName, devName)
+	log.WithFields(log.Fields{"poolName": poolName, "devName": devName, "poolDevicePath": poolDevicePath}).Info("[LDM] Composed poolDevicePath for symlink")
+
 	exist, err := p.hu.PathExists(devName)
 	if exist || err != nil {
+		log.WithFields(log.Fields{"devName": devName, "exist": exist, "err": err}).Warn("[LDM] Device already exists or error before symlink creation")
 		return exist, err
 	}
 
-	log.Infof("create symlink %s point to %s", poolDevicePath, actualDeviceLink)
+	log.WithFields(log.Fields{"poolDevicePath": poolDevicePath, "actualDeviceLink": actualDeviceLink}).Info("[LDM] Attempting to create symlink")
 	err = os.Symlink(actualDeviceLink, poolDevicePath)
 	if err != nil {
+		log.WithFields(log.Fields{"poolDevicePath": poolDevicePath, "actualDeviceLink": actualDeviceLink, "err": err}).Error("[LDM] Failed to create symlink")
 		return false, err
 	}
+	log.WithFields(log.Fields{"poolDevicePath": poolDevicePath, "actualDeviceLink": actualDeviceLink}).Info("[LDM] Successfully created symlink")
 
 	return true, nil
 }
