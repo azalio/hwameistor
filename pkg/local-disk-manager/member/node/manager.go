@@ -2,6 +2,9 @@ package node
 
 import (
 	"context"
+	"sync"
+	"time"
+
 	"github.com/fsnotify/fsnotify"
 	apisv1alpha1 "github.com/hwameistor/hwameistor/pkg/apis/hwameistor/v1alpha1"
 	"github.com/hwameistor/hwameistor/pkg/local-disk-manager/member/controller/disk"
@@ -24,8 +27,6 @@ import (
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sync"
-	"time"
 )
 
 // maxRetries is the number of times a task will be retried before it is dropped out of the queue.
@@ -571,6 +572,7 @@ func setDefaultOptions(options Options) Options {
 func (m *nodeManager) handleLocalDiskAdd(obj interface{}) {
 	localDisk := obj.(*apisv1alpha1.LocalDisk)
 	if localDisk.Spec.NodeName != m.nodeName || localDisk.Spec.Owner != apisv1alpha1.LocalDiskManager {
+		log.WithFields(log.Fields{"disk": localDisk.GetName(), "nodeName": localDisk.Spec.NodeName, "owner": localDisk.Spec.Owner, "expectedOwner": apisv1alpha1.LocalDiskManager}).Info("[LDM] Skipping LocalDisk in handleLocalDiskAdd due to nodeName/owner mismatch")
 		return
 	}
 	m.diskTaskQueue.Add(localDisk.GetName())
@@ -579,6 +581,7 @@ func (m *nodeManager) handleLocalDiskAdd(obj interface{}) {
 func (m *nodeManager) handleLocalDiskUpdate(_, obj interface{}) {
 	localDisk := obj.(*apisv1alpha1.LocalDisk)
 	if localDisk.Spec.NodeName != m.nodeName || localDisk.Spec.Owner != apisv1alpha1.LocalDiskManager {
+		log.WithFields(log.Fields{"disk": localDisk.GetName(), "nodeName": localDisk.Spec.NodeName, "owner": localDisk.Spec.Owner, "expectedOwner": apisv1alpha1.LocalDiskManager}).Info("[LDM] Skipping LocalDisk in handleLocalDiskUpdate due to nodeName/owner mismatch")
 		return
 	}
 	m.diskTaskQueue.Add(localDisk.GetName())
@@ -587,6 +590,7 @@ func (m *nodeManager) handleLocalDiskUpdate(_, obj interface{}) {
 func (m *nodeManager) handleLocalDiskDelete(obj interface{}) {
 	localDisk := obj.(*apisv1alpha1.LocalDisk)
 	if localDisk.Spec.NodeName != m.nodeName || localDisk.Spec.Owner != apisv1alpha1.LocalDiskManager {
+		log.WithFields(log.Fields{"disk": localDisk.GetName(), "nodeName": localDisk.Spec.NodeName, "owner": localDisk.Spec.Owner, "expectedOwner": apisv1alpha1.LocalDiskManager}).Info("[LDM] Skipping LocalDisk in handleLocalDiskDelete due to nodeName/owner mismatch")
 		return
 	}
 	m.diskTaskQueue.Add(localDisk.GetName())
@@ -596,6 +600,7 @@ func (m *nodeManager) handleLocalDiskClaimAdd(obj interface{}) {
 	localDiskClaim := obj.(*apisv1alpha1.LocalDiskClaim)
 	if localDiskClaim.Spec.NodeName != m.nodeName || localDiskClaim.Spec.Owner != apisv1alpha1.LocalDiskManager ||
 		localDiskClaim.Status.Status != apisv1alpha1.LocalDiskClaimStatusBound {
+		log.WithFields(log.Fields{"claim": localDiskClaim.GetName(), "nodeName": localDiskClaim.Spec.NodeName, "owner": localDiskClaim.Spec.Owner, "expectedOwner": apisv1alpha1.LocalDiskManager, "status": localDiskClaim.Status.Status}).Info("[LDM] Skipping LocalDiskClaim in handleLocalDiskClaimAdd due to nodeName/owner/status mismatch")
 		return
 	}
 	m.diskClaimTaskQueue.Add(localDiskClaim.GetName())
@@ -605,6 +610,7 @@ func (m *nodeManager) handleLocalDiskClaimUpdate(_, obj interface{}) {
 	localDiskClaim := obj.(*apisv1alpha1.LocalDiskClaim)
 	if localDiskClaim.Spec.NodeName != m.nodeName || localDiskClaim.Spec.Owner != apisv1alpha1.LocalDiskManager ||
 		localDiskClaim.Status.Status != apisv1alpha1.LocalDiskClaimStatusBound {
+		log.WithFields(log.Fields{"claim": localDiskClaim.GetName(), "nodeName": localDiskClaim.Spec.NodeName, "owner": localDiskClaim.Spec.Owner, "expectedOwner": apisv1alpha1.LocalDiskManager, "status": localDiskClaim.Status.Status}).Info("[LDM] Skipping LocalDiskClaim in handleLocalDiskClaimUpdate due to nodeName/owner/status mismatch")
 		return
 	}
 	m.diskClaimTaskQueue.Add(localDiskClaim.GetName())
@@ -614,6 +620,7 @@ func (m *nodeManager) handleLocalDiskClaimDelete(obj interface{}) {
 	localDiskClaim := obj.(*apisv1alpha1.LocalDiskClaim)
 	if localDiskClaim.Spec.NodeName != m.nodeName || localDiskClaim.Spec.Owner != apisv1alpha1.LocalDiskManager ||
 		localDiskClaim.Status.Status != apisv1alpha1.LocalDiskClaimStatusBound {
+		log.WithFields(log.Fields{"claim": localDiskClaim.GetName(), "nodeName": localDiskClaim.Spec.NodeName, "owner": localDiskClaim.Spec.Owner, "expectedOwner": apisv1alpha1.LocalDiskManager, "status": localDiskClaim.Status.Status}).Info("[LDM] Skipping LocalDiskClaim in handleLocalDiskClaimDelete due to nodeName/owner/status mismatch")
 		return
 	}
 	m.diskClaimTaskQueue.Add(localDiskClaim.GetName())
