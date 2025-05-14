@@ -94,6 +94,8 @@ ui:
 localDiskManager:
   tolerationsOnMaster: true
   enableCSI: true
+  hostPaths:
+    configDir: /etc/hwameistor
   registrar:
     imageRepository: sig-storage/csi-node-driver-registrar
     tag: v2.5.0
@@ -182,5 +184,3 @@ localDiskActionController:
   imageRepository: hwameistor/local-disk-action-controller
   tag: ""
   resources: {}
-
-

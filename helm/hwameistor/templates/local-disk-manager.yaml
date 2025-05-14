@@ -54,6 +54,8 @@ spec:
             - --csi-enable={{ .Values.localDiskManager.enableCSI }}
           imagePullPolicy: IfNotPresent
           volumeMounts:
+          - name: host-bin
+            mountPath: /host/bin
           - name: udev
             mountPath: /run/udev
           - name: procmount
@@ -96,6 +98,10 @@ spec:
           securityContext:
             privileged: true
       volumes:
+      - name: host-bin
+        hostPath:
+          path: /bin
+          type: Directory
       - name: udev
         hostPath:
           path: /run/udev
@@ -114,7 +120,7 @@ spec:
           type: Directory
       - name: host-etc-hwameistor
         hostPath:
-          path: /etc/hwameistor
+          path: "{{ .Values.localDiskManager.hostPaths.configDir | default "/etc/hwameistor" }}"
           type: DirectoryOrCreate
       - name: socket-dir
         hostPath:

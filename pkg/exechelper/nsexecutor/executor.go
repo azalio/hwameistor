@@ -26,6 +26,18 @@ func New() exechelper.Executor {
 
 // RunCommand runs a command to completion, and get returns
 func (e *nsenterExecutor) RunCommand(params exechelper.ExecParams) exechelper.ExecResult {
+	// Special case for df command - use direct access to host filesystem instead of nsenter
+	if params.CmdName == "df" {
+		// Find the path argument (last argument) and prepend /host to it
+		if len(params.CmdArgs) > 0 {
+			lastArgIndex := len(params.CmdArgs) - 1
+			params.CmdArgs[lastArgIndex] = "/host" + params.CmdArgs[lastArgIndex]
+		}
+		// Run df command directly without nsenter
+		return e.pExecutor.RunCommand(params)
+	}
+
+	// For all other commands, use nsenter as before
 	command := append([]string{params.CmdName}, params.CmdArgs...)
 	combinedArgs := append(nsenterArgs, command...)
 	params.CmdName = nsenterCommand

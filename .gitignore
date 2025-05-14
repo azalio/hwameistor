@@ -47,3 +47,7 @@ docs/.env.production.local
 docs/npm-debug.log*
 docs/yarn-debug.log*
 docs/yarn-error.log*
+chats.db
+docs/azalio
+localdiskclaims.yaml
+helm/hwameistor/sts-local-pv.yaml
